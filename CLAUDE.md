@@ -188,11 +188,14 @@ flyctl secrets set SECRET_KEY="..." --app gutter-tracker-app
 
 ## Recent Updates (Dec 27, 2025)
 
+- ✅ Fixed chatbot context - Gemini now has comprehensive Gutter Tracker app context
+- ✅ Fixed photo upload - Mobile users can now choose camera OR gallery
+- ✅ Cleaned up duplicate AI agent files (removed .ai-team-master directory)
 - ✅ Fixed all navigation crashes (added missing routes)
 - ✅ Optimized memory (512MB, 1 worker)
 - ✅ Added calendar view for scheduled jobs
 - ✅ All routes tested and working
-- ✅ Production stable, no known bugs
+- ✅ Production stable, all tests passing (14/14)
 
 ## Working with Claude
 

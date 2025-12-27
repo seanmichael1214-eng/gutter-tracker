@@ -411,11 +411,14 @@ flyctl logs --app gutter-tracker-app --no-tail | tail -20
 - `/help` - AI chatbot support
 
 ### Recent Fixes (Dec 27, 2025)
-1. ✅ Fixed login freeze - added missing `/quick-estimate` and `/help` routes
-2. ✅ Fixed serverless deployment - switched to StreamHandler
-3. ✅ Fixed OOM crashes - increased memory to 512MB, reduced to 1 worker
-4. ✅ Fixed tab navigation - added missing `/materials` and `/reports` routes
-5. ✅ Added calendar feature - monthly view of scheduled jobs
+1. ✅ Fixed chatbot context - Gemini now understands Gutter Tracker app features
+2. ✅ Fixed photo upload - Mobile users can choose camera OR gallery (3 templates)
+3. ✅ Cleaned up duplicate files - removed .ai-team-master directory (17 files)
+4. ✅ Fixed login freeze - added missing `/quick-estimate` and `/help` routes
+5. ✅ Fixed serverless deployment - switched to StreamHandler
+6. ✅ Fixed OOM crashes - increased memory to 512MB, reduced to 1 worker
+7. ✅ Fixed tab navigation - added missing `/materials` and `/reports` routes
+8. ✅ Added calendar feature - monthly view of scheduled jobs
 
 ---
 

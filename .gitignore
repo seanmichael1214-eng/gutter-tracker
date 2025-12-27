@@ -37,3 +37,4 @@ app_old.py
 
 # Vercel
 .vercel
+.env*.local

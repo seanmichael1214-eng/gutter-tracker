@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calendar - Gutter Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding: 20px;
+            background: linear-gradient(145deg, #1a2332 0%, #0f1620 100%);
+            border-radius: 12px;
+        }
+        
+        .calendar-header h2 {
+            margin: 0;
+            color: var(--accent);
+        }
+        
+        .calendar-nav {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .calendar-nav a {
+            padding: 8px 16px;
+            background: rgba(0, 212, 170, 0.1);
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .calendar-nav a:hover {
+            background: var(--accent);
+            color: var(--bg-dark);
+        }
+        
+        .calendar-grid {
+            background: linear-gradient(145deg, #1a2332 0%, #0f1620 100%);
+            border-radius: 12px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+        
+        .calendar-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 8px;
+        }
+        
+        .calendar-table th {
+            padding: 12px;
+            background: rgba(0, 212, 170, 0.1);
+            color: var(--accent);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            border-radius: 6px;
+        }
+        
+        .calendar-table td {
+            padding: 0;
+            vertical-align: top;
+            height: 120px;
+            min-width: 100px;
+        }
+        
+        .calendar-day {
+            height: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .calendar-day:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--accent);
+        }
+        
+        .calendar-day.empty {
+            background: transparent;
+            border: none;
+            cursor: default;
+        }
+        
+        .calendar-day.today {
+            background: rgba(0, 212, 170, 0.15);
+            border-color: var(--accent);
+        }
+        
+        .day-number {
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            font-size: 1.1rem;
+        }
+        
+        .today .day-number {
+            color: var(--accent);
+        }
+        
+        .job-item {
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.2) 0%, rgba(0, 255, 136, 0.1) 100%);
+            border-left: 3px solid var(--accent);
+            padding: 4px 6px;
+            margin: 4px 0;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .job-item.completed {
+            background: linear-gradient(135deg, rgba(6, 214, 160, 0.2) 0%, rgba(6, 214, 160, 0.1) 100%);
+            border-left-color: var(--success);
+        }
+        
+        .job-item.in-progress {
+            background: linear-gradient(135deg, rgba(255, 159, 28, 0.2) 0%, rgba(255, 159, 28, 0.1) 100%);
+            border-left-color: var(--warning);
+        }
+        
+        .legend {
+            display: flex;
+            gap: 24px;
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .legend-color.scheduled {
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.2) 0%, rgba(0, 255, 136, 0.1) 100%);
+            border: 2px solid var(--accent);
+        }
+        
+        .legend-color.in-progress {
+            background: linear-gradient(135deg, rgba(255, 159, 28, 0.2) 0%, rgba(255, 159, 28, 0.1) 100%);
+            border: 2px solid var(--warning);
+        }
+        
+        .legend-color.completed {
+            background: linear-gradient(135deg, rgba(6, 214, 160, 0.2) 0%, rgba(6, 214, 160, 0.1) 100%);
+            border: 2px solid var(--success);
+        }
+        
+        @media (max-width: 768px) {
+            .calendar-table td {
+                height: 80px;
+                min-width: 60px;
+            }
+            
+            .day-number {
+                font-size: 0.9rem;
+            }
+            
+            .job-item {
+                font-size: 0.65rem;
+                padding: 2px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>Gutter Tracker</h1>
+        <ul>
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/customers">Customers</a></li>
+            <li><a href="/jobs">Jobs</a></li>
+            <li><a href="/calendar" class="active">Calendar</a></li>
+            <li><a href="/inventory">Inventory</a></li>
+            <li><a href="/help">Help</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="calendar-header">
+            <h2>📅 {{ month_name }} {{ year }}</h2>
+            <div class="calendar-nav">
+                <a href="/calendar?month={{ prev_month }}&year={{ prev_year }}">← Previous</a>
+                <a href="/calendar">Today</a>
+                <a href="/calendar?month={{ next_month }}&year={{ next_year }}">Next →</a>
+            </div>
+        </div>
+
+        <div class="calendar-grid">
+            <table class="calendar-table">
+                <thead>
+                    <tr>
+                        <th>Sun</th>
+                        <th>Mon</th>
+                        <th>Tue</th>
+                        <th>Wed</th>
+                        <th>Thu</th>
+                        <th>Fri</th>
+                        <th>Sat</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for week in calendar %}
+                    <tr>
+                        {% for day in week %}
+                        <td>
+                            {% if day != 0 %}
+                                {% set date_key = '%04d-%02d-%02d'|format(year, month, day) %}
+                                {% set is_today = (year == today.year and month == today.month and day == today.day) %}
+                                <div class="calendar-day {% if is_today %}today{% endif %}" onclick="window.location.href='/jobs?date={{ date_key }}'">
+                                    <div class="day-number">{{ day }}</div>
+                                    {% if date_key in jobs_by_date %}
+                                        {% for job in jobs_by_date[date_key] %}
+                                        <div class="job-item {{ job.status|replace('_', '-') }}" title="{{ job.title }} - {{ job.customer.name }}">
+                                            {{ job.customer.name[:15] }}{% if job.customer.name|length > 15 %}...{% endif %}
+                                        </div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="calendar-day empty"></div>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color scheduled"></div>
+                <span>Scheduled</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color in-progress"></div>
+                <span>In Progress</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color completed"></div>
+                <span>Completed</span>
+            </div>
+        </div>
+    </div>
+
+    <a href="/help" class="help-fab" title="Get Help">❓</a>
+</body>
+</html>

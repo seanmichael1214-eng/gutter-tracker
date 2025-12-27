@@ -438,3 +438,58 @@ def reports():
                          customers_count=customers_count,
                          inventory_count=inventory_count)
 
+
+
+# Calendar
+@main.route("/calendar")
+@login_required
+def calendar():
+    from datetime import datetime, timedelta
+    import calendar as cal
+    
+    # Get current month or requested month
+    year = request.args.get('year', datetime.now().year, type=int)
+    month = request.args.get('month', datetime.now().month, type=int)
+    
+    # Get all jobs for the month
+    start_date = datetime(year, month, 1).date()
+    if month == 12:
+        end_date = datetime(year + 1, 1, 1).date()
+    else:
+        end_date = datetime(year, month + 1, 1).date()
+    
+    jobs = Job.query.filter(
+        Job.scheduled_date >= start_date,
+        Job.scheduled_date < end_date
+    ).all()
+    
+    # Group jobs by date
+    jobs_by_date = {}
+    for job in jobs:
+        if job.scheduled_date:
+            date_key = job.scheduled_date.strftime('%Y-%m-%d')
+            if date_key not in jobs_by_date:
+                jobs_by_date[date_key] = []
+            jobs_by_date[date_key].append(job)
+    
+    # Generate calendar data
+    cal_obj = cal.monthcalendar(year, month)
+    month_name = cal.month_name[month]
+    
+    # Calculate previous and next month
+    prev_month = month - 1 if month > 1 else 12
+    prev_year = year if month > 1 else year - 1
+    next_month = month + 1 if month < 12 else 1
+    next_year = year if month < 12 else year + 1
+    
+    return render_template("calendar.html",
+                         calendar=cal_obj,
+                         year=year,
+                         month=month,
+                         month_name=month_name,
+                         jobs_by_date=jobs_by_date,
+                         prev_month=prev_month,
+                         prev_year=prev_year,
+                         next_month=next_month,
+                         next_year=next_year,
+                         today=datetime.now().date())

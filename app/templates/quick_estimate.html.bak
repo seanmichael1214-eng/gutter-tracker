@@ -379,7 +379,6 @@
             <li><a href="/">Dashboard</a></li>
             <li><a href="/customers">Customers</a></li>
             <li><a href="/jobs">Jobs</a></li>
-            <li><a href="/calendar">Calendar</a></li>
             <li><a href="/inventory">Inventory</a></li>
             <li><a href="/materials">Materials</a></li>
             <li><a href="/quick-estimate" class="active">Quick Estimate</a></li>

@@ -412,3 +412,29 @@ def quick_estimate():
 @login_required
 def help_page():
     return render_template("help.html")
+
+
+# Materials
+@main.route("/materials")
+@login_required
+def materials():
+    materials = Material.query.all()
+    return render_template("materials.html", materials=materials)
+
+
+# Reports
+@main.route("/reports")
+@login_required
+def reports():
+    total_jobs = Job.query.count()
+    completed_jobs = Job.query.filter_by(status="completed").count()
+    total_revenue = (db.session.query(db.func.sum(Job.total_cost)).filter_by(status="completed").scalar() or 0)
+    customers_count = Customer.query.count()
+    inventory_count = InventoryItem.query.count()
+    return render_template("reports.html", 
+                         total_jobs=total_jobs,
+                         completed_jobs=completed_jobs,
+                         total_revenue=total_revenue,
+                         customers_count=customers_count,
+                         inventory_count=inventory_count)
+

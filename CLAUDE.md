@@ -189,8 +189,9 @@ flyctl secrets set SECRET_KEY="..." --app gutter-tracker-app
 
 ## Recent Updates (Dec 27, 2025)
 
-- ✅ **LATEST:** Added a feature to download a daily "End of Shift" report from the Reports page as a text file.
-- ✅ **LATEST:** Refactored the testing setup to use a central `conftest.py` and `pytest.ini`, resolving multiple test failures and improving test suite stability.
+- ✅ **LATEST:** Updated Gemini API model from `gemini-2.0-flash-exp` (experimental) to `gemini-2.0-flash` (stable) for production reliability.
+- ✅ Added a feature to download a daily "End of Shift" report from the Reports page as a text file.
+- ✅ Refactored the testing setup to use a central `conftest.py` and `pytest.ini`, resolving multiple test failures and improving test suite stability.
 - ✅ **LATEST:** Switched from Paketo Buildpacks to Docker deployment (Google Container Registry deprecated)
 - ✅ **LATEST:** Fixed deployment issues - app redeployed and verified working
 - ✅ **LATEST:** Added calendar date filtering for jobs

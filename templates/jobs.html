@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Jobs - Gutter Crew Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <h1>Gutter Crew Tracker</h1>
+        <ul>
+            <li><a href="/">Dashboard</a></li>
+            <li><a href="/customers">Customers</a></li>
+            <li><a href="/jobs" class="active">Jobs</a></li>
+            <li><a href="/inventory">Inventory</a></li>
+            <li><a href="/materials">Materials</a></li>
+            <li><a href="/reports">Reports</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h2>Jobs</h2>
+
+        <div class="search-container">
+            <form method="GET" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <select name="status" style="padding: 0.75rem;">
+                    <option value="">All Statuses</option>
+                    <option value="scheduled" {% if status_filter == 'scheduled' %}selected{% endif %}>Scheduled</option>
+                    <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+                    <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Filter</button>
+                {% if status_filter %}
+                <a href="/jobs" class="btn btn-secondary">Clear</a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="form-container">
+            <h3>Create New Job</h3>
+            <form method="POST" action="/jobs/add">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Customer *</label>
+                        <select name="customer_id" required>
+                            <option value="">Select Customer</option>
+                            {% for customer in customers %}
+                            <option value="{{ customer.id }}">{{ customer.name }} - {{ customer.address }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Scheduled Date</label>
+                        <input type="date" name="scheduled_date">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Job Title *</label>
+                    <input type="text" name="title" placeholder="e.g., Gutter Cleaning, Gutter Installation" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" placeholder="Job details, special requirements..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Create Job</button>
+            </form>
+        </div>
+
+        <h3>Job List ({{ jobs|length }})</h3>
+
+        {% if jobs|length == 0 %}
+        <div class="card">
+            <p style="text-align: center; color: #666;">
+                {% if status_filter %}
+                    No {{ status_filter }} jobs found.
+                {% else %}
+                    No jobs yet. Create your first job above!
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+
+        {% for job in jobs %}
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap;">
+                <div>
+                    <h3>{{ job.title }}</h3>
+                    <p><strong>Customer:</strong> {{ job.customer_name }}</p>
+                </div>
+                <span class="status-badge status-{{ job.status }}">{{ job.status|replace('_', ' ')|title }}</span>
+            </div>
+            {% if job.scheduled_date %}
+            <p><strong>📅 Scheduled:</strong> {{ job.scheduled_date }}</p>
+            {% endif %}
+            {% if job.description %}
+            <p><strong>Description:</strong> {{ job.description }}</p>
+            {% endif %}
+            <p><strong>💰 Total Cost:</strong> ${{ "%.2f"|format(job.total_cost) }}</p>
+            <div class="card-actions">
+                <a href="/jobs/{{ job.id }}" class="btn btn-primary btn-small">View Details</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

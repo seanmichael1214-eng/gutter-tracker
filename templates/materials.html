@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Materials - Gutter Crew Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <h1>Gutter Crew Tracker</h1>
+        <ul>
+            <li><a href="/">Dashboard</a></li>
+            <li><a href="/customers">Customers</a></li>
+            <li><a href="/jobs">Jobs</a></li>
+            <li><a href="/inventory">Inventory</a></li>
+            <li><a href="/materials" class="active">Materials</a></li>
+            <li><a href="/reports">Reports</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h2>Materials Library</h2>
+        <p>Standard materials with pricing for job costing</p>
+
+        <div class="form-container">
+            <h3>Add Material</h3>
+            <form method="POST" action="/materials/add">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Material Name *</label>
+                        <input type="text" name="name" placeholder="e.g., 5-inch K-style Gutter - White" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Unit *</label>
+                        <input type="text" name="unit" placeholder="e.g., foot, piece" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Unit Cost ($) *</label>
+                        <input type="number" name="unit_cost" step="0.01" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Supplier</label>
+                        <input type="text" name="supplier" placeholder="Where to buy this">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea name="notes" placeholder="Specs, alternatives, etc..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Add Material</button>
+            </form>
+        </div>
+
+        <h3>Material List ({{ materials|length }})</h3>
+
+        {% if materials|length == 0 %}
+        <div class="card">
+            <p style="text-align: center; color: #666;">No materials yet. Add your first material above!</p>
+        </div>
+        {% endif %}
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Material Name</th>
+                        <th>Unit Cost</th>
+                        <th>Unit</th>
+                        <th>Supplier</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for material in materials %}
+                    <tr>
+                        <td>{{ material.name }}</td>
+                        <td>${{ "%.2f"|format(material.unit_cost) }}</td>
+                        <td>per {{ material.unit }}</td>
+                        <td>{{ material.supplier or '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

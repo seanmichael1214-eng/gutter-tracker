@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Customer - Gutter Crew Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .form-container {
+            background: #f4f4f4;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 5px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            box-sizing: border-box;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .btn-cancel {
+            background: #6c757d;
+        }
+        .btn-cancel:hover {
+            background: #5a6268;
+        }
+        a {
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Edit Customer</h1>
+    
+    <div class="form-container">
+        <form method="POST">
+            <input type="text" name="name" placeholder="Customer Name" value="{{ customer.name }}" required>
+            <input type="text" name="address" placeholder="Address" value="{{ customer.address }}" required>
+            <input type="text" name="phone" placeholder="Phone Number" value="{{ customer.phone }}" required>
+            <textarea name="notes" placeholder="Job notes..." rows="5">{{ customer.notes }}</textarea>
+            <button type="submit">Save Changes</button>
+            <a href="/"><button type="button" class="btn-cancel">Cancel</button></a>
+        </form>
+    </div>
+</body>
+</html>

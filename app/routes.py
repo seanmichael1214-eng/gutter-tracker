@@ -330,14 +330,49 @@ def api_chat():
         return jsonify({"response": f"Created scanned inventory item {item.name} (id {item.id})"})
     if lm.startswith("/") or lm.startswith("!"):
         return jsonify({"response": "Unknown command. Try inventory- commands or /help"})
-    # Fallback
+    # Fallback to Gemini with app context
     if hasattr(gemini_model, 'generate_content'):
         try:
-            resp = gemini_model.generate_content(f"You are helping a user: {message}")
+            system_prompt = """You are a knowledgeable assistant for Gutter Tracker, a business management application for gutter installation and cleaning companies.
+
+ABOUT GUTTER TRACKER:
+- Job Management: Create, track, and manage gutter installation/cleaning jobs with status updates (scheduled, in progress, completed)
+- Customer Management: Store and manage customer information including names, addresses, phone numbers, emails, and notes
+- Inventory Management: Track materials and supplies used in jobs, with support for multiple owners/team members
+- Estimates & Pricing: Generate AI-powered cost estimates for jobs based on job descriptions and customer addresses
+- Photo Analysis: Analyze job site photos to identify gutter conditions, damage types, and recommend repairs
+- Scheduling: Suggest optimal scheduling dates for jobs
+- Materials Database: Manage available materials for gutter work
+- Reports & Analytics: View job statistics, revenue, completion rates, and customer counts
+- Quick Estimates: Generate estimates from photos
+
+APP FEATURES:
+- User can ask about how to use any of these features
+- User can run inventory commands like "inventory-add", "inventory-update", "inventory-delete", "inventory-scan"
+- Inventory items have: name, quantity, unit, unit_cost, location, low_stock_alert, notes, and owner
+- Jobs can be filtered by status: scheduled, in progress, completed
+- Users can view monthly calendar of scheduled jobs
+
+YOUR ROLE:
+- Answer questions about using Gutter Tracker features
+- Provide guidance on best practices for gutter business operations
+- Help troubleshoot app features
+- Answer general gutter industry questions (repair types, materials, techniques)
+- Guide users on inventory management and job scheduling
+
+When answering:
+1. Be helpful and professional
+2. Reference specific app features when relevant
+3. Provide step-by-step guidance for app tasks
+4. If user asks about inventory commands, remind them of the correct syntax
+5. For gutter-related technical questions, provide expert advice"""
+
+            full_prompt = f"{system_prompt}\n\nUser Question: {message}"
+            resp = gemini_model.generate_content(full_prompt)
             return jsonify({"response": resp.text})
         except Exception:
             pass
-    return jsonify({"response": f"You asked: {message}. I can help with inventory commands."})
+    return jsonify({"response": f"You asked: {message}. I can help with inventory commands or app features. Try asking about job management, customers, scheduling, or gutter-related questions."})
 
 
 @main.route("/api/ai/help", methods=["POST"])

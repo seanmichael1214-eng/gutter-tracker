@@ -133,7 +133,7 @@
             
             <h4 style="margin-top: 2rem;">Add Photo</h4>
             <div class="camera-container">
-                <input type="file" id="photo-input" accept="image/*" capture="environment" style="margin-bottom: 1rem;">
+                <input type="file" id="photo-input" accept="image/*" style="margin-bottom: 1rem;">
                 <img id="photo-preview" style="max-width: 100%; margin-bottom: 1rem; display: none; border-radius: 8px;">
                 <form method="POST" action="/jobs/{{ job_id }}/add_photo" id="photo-form">
                     <input type="hidden" name="photo_data" id="photo-data">

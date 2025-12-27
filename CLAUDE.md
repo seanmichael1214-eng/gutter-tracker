@@ -87,8 +87,9 @@ When adding new features:
 - `app/models.py` - Database models (Customer, Job, InventoryItem, etc.)
 - `app/__init__.py` - Flask factory, **uses StreamHandler for logs**
 - `app/config.py` - Config, handles postgres:// → postgresql://
-- `fly.toml` - Fly.io config (512MB memory)
-- `fly_start.sh` - Startup script (1 worker, 2 threads)
+- `fly.toml` - Fly.io config (512MB memory, **uses Docker build**)
+- `Dockerfile` - Docker build config (Python 3.11, Gunicorn on port 8080)
+- `fly_start.sh` - Legacy startup script (replaced by Dockerfile CMD)
 
 **Templates:**
 All in `app/templates/`:
@@ -188,6 +189,10 @@ flyctl secrets set SECRET_KEY="..." --app gutter-tracker-app
 
 ## Recent Updates (Dec 27, 2025)
 
+- ✅ **LATEST:** Switched from Paketo Buildpacks to Docker deployment (Google Container Registry deprecated)
+- ✅ **LATEST:** Fixed deployment issues - app redeployed and verified working
+- ✅ **LATEST:** Added calendar date filtering for jobs
+- ✅ **LATEST:** Created comprehensive testing documentation (PRE_RELEASE_TEST_GUIDE.md, automated_test.py)
 - ✅ Fixed chatbot context - Gemini now has comprehensive Gutter Tracker app context
 - ✅ Fixed photo upload - Mobile users can now choose camera OR gallery
 - ✅ Cleaned up duplicate AI agent files (removed .ai-team-master directory)
@@ -195,7 +200,7 @@ flyctl secrets set SECRET_KEY="..." --app gutter-tracker-app
 - ✅ Optimized memory (512MB, 1 worker)
 - ✅ Added calendar view for scheduled jobs
 - ✅ All routes tested and working
-- ✅ Production stable, all tests passing (14/14)
+- ✅ Production stable, all tests passing (20/20)
 
 ## Working with Claude
 
@@ -212,6 +217,7 @@ flyctl secrets set SECRET_KEY="..." --app gutter-tracker-app
 - Customer password is NAO$ - don't change without coordination
 - Database is PostgreSQL in production - SQLite in development
 - Logs use StreamHandler (not FileHandler) for serverless compatibility
+- **Deployment uses Docker (not Paketo Buildpacks)** - Dockerfile defines port 8080, 1 worker, 2 threads
 - Always update navigation in ALL templates when adding routes
 
 ---

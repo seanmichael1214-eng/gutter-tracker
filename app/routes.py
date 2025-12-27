@@ -398,3 +398,17 @@ def api_scan_inventory():
         return jsonify({"success": True, "analysis": analysis, "provider": "LocalFallback"})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
+
+# Quick Estimate
+@main.route("/quick-estimate")
+@login_required
+def quick_estimate():
+    return render_template("quick_estimate.html")
+
+
+# Help
+@main.route("/help")
+@login_required
+def help_page():
+    return render_template("help.html")

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gutter Tracker - Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style_mobile.css') }}">
+</head>
+<body>
+    <!-- Mobile Navigation -->
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">🏠 Gutter Tracker</a>
+            <button class="nav-toggle" onclick="toggleMenu()">☰</button>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="/">Dashboard</a></li>
+                <li><a href="/customers">Customers</a></li>
+                <li><a href="/jobs">Jobs</a></li>
+                <li><a href="/inventory">Inventory</a></li>
+                <li><a href="/materials">Materials</a></li>
+                <li><a href="/reports">Reports</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 style="margin-bottom: 1.5rem; color: var(--text-dark);">Dashboard</h1>
+        
+        <!-- Stats Grid -->
+        <div class="grid grid-2 grid-md-4">
+            <div class="stat-card">
+                <div class="stat-value">{{ total_jobs }}</div>
+                <div class="stat-label">Total Jobs</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, var(--secondary-color), #34d399);">
+                <div class="stat-value">{{ completed_jobs }}</div>
+                <div class="stat-label">Completed</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, var(--warning-color), #fbbf24);">
+                <div class="stat-value">{{ scheduled_jobs }}</div>
+                <div class="stat-label">Scheduled</div>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa);">
+                <div class="stat-value">${{ "%.2f"|format(total_revenue) }}</div>
+                <div class="stat-label">Total Revenue</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card" style="margin-top: 2rem;">
+            <div class="card-header">
+                Quick Actions
+                <span class="ai-badge">AI Powered</span>
+            </div>
+            <div class="grid grid-2">
+                <button class="btn btn-primary btn-block" onclick="location.href='/customers'">
+                    👤 Add Customer
+                </button>
+                <button class="btn btn-secondary btn-block" onclick="location.href='/jobs'">
+                    📋 New Job
+                </button>
+                <button class="btn btn-primary btn-block" onclick="location.href='/inventory'">
+                    📦 Check Inventory
+                </button>
+                <button class="btn btn-secondary btn-block" onclick="openCamera()">
+                    📸 Analyze Site
+                </button>
+            </div>
+        </div>
+
+        <!-- AI Quick Estimate -->
+        <div class="card">
+            <div class="card-header">
+                ✨ AI Quick Estimate
+            </div>
+            <form id="quickEstimateForm">
+                <div class="form-group">
+                    <label class="form-label">Job Description</label>
+                    <textarea class="form-textarea" id="estimateDescription" placeholder="E.g., Replace 100ft of 5-inch K-style gutters, 4 downspouts..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    Get AI Estimate
+                </button>
+            </form>
+            <div id="estimateResult" style="margin-top: 1rem; display: none;">
+                <div class="alert alert-info">
+                    <strong>AI Estimate:</strong>
+                    <pre id="estimateText" style="white-space: pre-wrap; margin-top: 0.5rem;"></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card">
+            <div class="card-header">Recent Activity</div>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Activity</th>
+                            <th class="hide-mobile">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Today</td>
+                            <td>System initialized</td>
+                            <td class="hide-mobile"><span class="badge badge-completed">Ready</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Mobile Camera for Photo Analysis -->
+        <input type="file" id="cameraInput" class="camera-input" accept="image/*" capture="environment" onchange="analyzePhoto(event)">
+    </div>
+
+    <script>
+        // Toggle mobile menu
+        function toggleMenu() {
+            const menu = document.getElementById('navMenu');
+            menu.classList.toggle('active');
+        }
+
+        // Open camera for site analysis
+        function openCamera() {
+            document.getElementById('cameraInput').click();
+        }
+
+        // Analyze photo with AI
+        async function analyzePhoto(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const photoData = e.target.result;
+                
+                // Show loading
+                alert('Analyzing photo with AI...');
+                
+                try {
+                    const response = await fetch('/api/ai/analyze-photo', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            photo_data: photoData,
+                            context: 'Quick site analysis'
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    alert('AI Analysis:\n\n' + data.analysis);
+                } catch (error) {
+                    alert('Error analyzing photo: ' + error.message);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Quick AI Estimate
+        document.getElementById('quickEstimateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const description = document.getElementById('estimateDescription').value;
+            if (!description) {
+                alert('Please enter a job description');
+                return;
+            }
+
+            const resultDiv = document.getElementById('estimateResult');
+            const estimateText = document.getElementById('estimateText');
+            
+            // Show loading
+            estimateText.textContent = 'Generating estimate...';
+            resultDiv.style.display = 'block';
+            
+            try {
+                const response = await fetch('/api/ai/estimate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        description: description,
+                        address: 'General estimate'
+                    })
+                });
+                
+                const data = await response.json();
+                estimateText.textContent = data.estimate;
+            } catch (error) {
+                estimateText.textContent = 'Error generating estimate: ' + error.message;
+            }
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const nav = document.querySelector('.nav-container');
+            const menu = document.getElementById('navMenu');
+            
+            if (!nav.contains(e.target) && menu.classList.contains('active')) {
+                menu.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

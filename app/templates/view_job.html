@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Job Details - Gutter Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <h1>Gutter Tracker</h1>
+        <ul>
+            <li><a href="/">Dashboard</a></li>
+            <li><a href="/customers">Customers</a></li>
+            <li><a href="/jobs" class="active">Jobs</a></li>
+            <li><a href="/inventory">Inventory</a></li>
+            <li><a href="/materials">Materials</a></li>
+            <li><a href="/reports">Reports</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <a href="/jobs" class="btn btn-secondary btn-small" style="margin-bottom: 1rem;">← Back to Jobs</a>
+        
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap;">
+                <h2>{{ job.title }}</h2>
+                <span class="status-badge status-{{ job.status }}">{{ job.status|replace('_', ' ')|title }}</span>
+            </div>
+            
+            <h3 style="margin-top: 1rem;">Customer Information</h3>
+            <p><strong>Name:</strong> {{ customer.name }}</p>
+            <p><strong>Address:</strong> {{ customer.address }}</p>
+            <p><strong>Phone:</strong> {{ customer.phone }}</p>
+            {% if customer.email %}
+            <p><strong>Email:</strong> {{ customer.email }}</p>
+            {% endif %}
+            
+            {% if job.scheduled_date %}
+            <h3 style="margin-top: 1rem;">Scheduled Date</h3>
+            <p>{{ job.scheduled_date }}</p>
+            {% endif %}
+            
+            {% if job.description %}
+            <h3 style="margin-top: 1rem;">Description</h3>
+            <p>{{ job.description }}</p>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <h3>Update Job Status</h3>
+            <form method="POST" action="/jobs/{{ job_id }}/status" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <select name="status" style="padding: 0.75rem; flex: 1; min-width: 200px;">
+                    <option value="scheduled" {% if job.status == 'scheduled' %}selected{% endif %}>Scheduled</option>
+                    <option value="in_progress" {% if job.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="completed" {% if job.status == 'completed' %}selected{% endif %}>Completed</option>
+                    <option value="cancelled" {% if job.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Update Status</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3>Materials Used</h3>
+            {% if job.materials_used %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Material</th>
+                        <th>Quantity</th>
+                        <th>Unit Cost</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for material in job.materials_used %}
+                    <tr>
+                        <td>{{ material.name }}</td>
+                        <td>{{ material.quantity }}</td>
+                        <td>${{ "%.2f"|format(material.unit_cost) }}</td>
+                        <td>${{ "%.2f"|format(material.total_cost) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr style="font-weight: bold;">
+                        <td colspan="3">Total Cost:</td>
+                        <td>${{ "%.2f"|format(job.total_cost) }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+            {% else %}
+            <p style="color: #666;">No materials used yet.</p>
+            {% endif %}
+            
+            <h4 style="margin-top: 2rem;">Add Material</h4>
+            <form method="POST" action="/jobs/{{ job_id }}/add_material">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Material</label>
+                        <select name="material_id" required>
+                            <option value="">Select Material</option>
+                            {% for material in materials %}
+                            <option value="{{ material.id }}">{{ material.name }} - ${{ "%.2f"|format(material.unit_cost) }}/{{ material.unit }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity</label>
+                        <input type="number" name="quantity" step="0.01" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success">Add Material</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3>Job Photos</h3>
+            {% if job.photos %}
+            <div class="photo-gallery">
+                {% for photo in job.photos %}
+                <div class="photo-item">
+                    <img src="{{ photo.data }}" alt="Job photo">
+                    <div class="photo-caption">
+                        {{ photo.caption or 'No caption' }}
+                        <br><small>{{ photo.timestamp[:10] }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="color: #666;">No photos yet.</p>
+            {% endif %}
+            
+            <h4 style="margin-top: 2rem;">Add Photo</h4>
+            <div class="camera-container">
+                <input type="file" id="photo-input" accept="image/*" capture="environment" style="margin-bottom: 1rem;">
+                <img id="photo-preview" style="max-width: 100%; margin-bottom: 1rem; display: none; border-radius: 8px;">
+                <form method="POST" action="/jobs/{{ job_id }}/add_photo" id="photo-form">
+                    <input type="hidden" name="photo_data" id="photo-data">
+                    <div class="form-group">
+                        <label>Caption</label>
+                        <input type="text" name="caption" placeholder="Describe this photo...">
+                    </div>
+                    <button type="submit" class="btn btn-success" id="submit-photo" disabled>Upload Photo</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Job Notes</h3>
+            <form method="POST" action="/jobs/{{ job_id }}/notes">
+                <div class="form-group">
+                    <textarea name="notes" rows="5" placeholder="Add notes about the job...">{{ job.notes }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Notes</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const photoInput = document.getElementById('photo-input');
+        const photoPreview = document.getElementById('photo-preview');
+        const photoData = document.getElementById('photo-data');
+        const submitBtn = document.getElementById('submit-photo');
+
+        photoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    photoPreview.src = e.target.result;
+                    photoPreview.style.display = 'block';
+                    photoData.value = e.target.result;
+                    submitBtn.disabled = false;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+
+    <!-- Floating Help Button -->
+    <a href="/help" class="help-fab" title="Get Help">❓</a>
+</body>
+</html>

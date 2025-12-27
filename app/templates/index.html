@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gutter Tracker</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .tabs { display: flex; gap: 6px; flex-wrap: wrap; padding: 12px; }
+        .tab { padding: 8px 14px; border-radius: 6px; text-decoration: none; color: #fff; font-weight: 600; }
+        .tab.active { outline: 2px solid #fff; }
+        .tab.color-0 { background: #4e79a7; }
+        .tab.color-1 { background: #e15759; }
+        .tab.color-2 { background: #76b7b2; }
+        .tab.color-3 { background: #59a14f; }
+        .content { padding: 16px; }
+        .inventory-card { border: 1px solid #ddd; padding: 12px; border-radius: 6px; margin: 8px 0; }
+    </style>
+</head>
+<body>
+    <h1>Gutter Tracker</h1>
+    <div class="tabs" id="userTabs">
+        {% for c in customers %}
+        <a class="tab color-{{ loop.index0 % 4 }}{% if current_id == c.id %} active{% endif %}" href="/home?customer_id={{ c.id }}">{{ c.name }}</a>
+        {% endfor %}
+    </div>
+    <div class="content">
+        {% if inventories is defined and inventories %}
+            <h2>Inventory for {{ customers|selectattr('id','equalto',current_id)|first.name if current_id else '—' }}</h2>
+            {% for it in inventories %}
+            <div class="inventory-card">
+                <strong>{{ it.name }}</strong> - {{ it.quantity }} {{ it.unit }} @ {{ it.unit_cost }}
+                <br/>Location: {{ it.location }}
+                <br/>Notes: {{ it.notes }}
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="no-results">Select a user tab to view inventory.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

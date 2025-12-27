@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inventory - Gutter Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .camera-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            color: white;
+        }
+        .camera-section h3 {
+            color: white;
+            margin-top: 0;
+        }
+        .camera-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        .camera-btn {
+            padding: 15px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .camera-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .camera-btn.primary {
+            background: #fff;
+            color: #667eea;
+        }
+        .camera-btn.secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        #videoContainer {
+            display: none;
+            margin: 15px 0;
+            position: relative;
+        }
+        #video {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 10px;
+            background: #000;
+        }
+        #captureBtn {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 4px solid white;
+            background: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #captureBtn:hover {
+            background: rgba(255,255,255,0.5);
+        }
+        #captureBtn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+        }
+        #previewContainer {
+            display: none;
+            margin: 15px 0;
+        }
+        #preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+        }
+        #aiResult {
+            display: none;
+            background: white;
+            color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+        #aiResult h4 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        #aiResult .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        #aiResult .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #667eea;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .ai-items {
+            margin-top: 15px;
+        }
+        .ai-item {
+            background: #f5f5f5;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ai-item button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .low-stock {
+            background: #ff6b6b;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>Gutter Tracker</h1>
+        <ul>
+            <li><a href="/">Dashboard</a></li>
+            <li><a href="/customers">Customers</a></li>
+            <li><a href="/jobs">Jobs</a></li>
+            <li><a href="/inventory" class="active">Inventory</a></li>
+            <li><a href="/materials">Materials</a></li>
+            <li><a href="/reports">Reports</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h2>Inventory</h2>
+
+        <!-- Camera/AI Scan Section -->
+        <div class="camera-section">
+            <h3>📸 AI Inventory Scanner</h3>
+            <p>Take a photo of materials to automatically identify and add to inventory</p>
+            
+            <div class="camera-buttons">
+                <button class="camera-btn primary" onclick="startCamera()">
+                    📷 Open Camera
+                </button>
+                <label class="camera-btn secondary">
+                    📁 Upload Photo
+                    <input type="file" accept="image/*" id="fileInput" style="display: none;" onchange="handleFileUpload(event)">
+                </label>
+            </div>
+
+            <div id="videoContainer">
+                <video id="video" autoplay playsinline></video>
+                <button id="captureBtn" onclick="capturePhoto()"></button>
+                <br>
+                <button class="camera-btn secondary" onclick="stopCamera()" style="margin-top: 10px;">✕ Close Camera</button>
+            </div>
+
+            <div id="previewContainer">
+                <img id="preview" alt="Captured photo">
+                <br>
+                <button class="camera-btn primary" onclick="analyzePhoto()" style="margin-top: 10px;">🤖 Analyze with AI</button>
+                <button class="camera-btn secondary" onclick="clearPreview()" style="margin-top: 10px;">✕ Clear</button>
+            </div>
+
+            <div id="aiResult">
+                <h4>🤖 AI Analysis</h4>
+                <div id="aiContent"></div>
+            </div>
+        </div>
+
+        <div class="search-container">
+            <form method="GET" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <select name="location" style="padding: 0.75rem;">
+                    <option value="">All Locations</option>
+                    <option value="barn" {% if location_filter == 'barn' %}selected{% endif %}>Barn</option>
+                    <option value="van" {% if location_filter == 'van' %}selected{% endif %}>Van</option>
+                    <option value="other" {% if location_filter == 'other' %}selected{% endif %}>Other</option>
+                </select>
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" name="low_stock" value="true" {% if low_stock %}checked{% endif %}>
+                    Low Stock Only
+                </label>
+                <button type="submit" class="btn btn-primary">Filter</button>
+                {% if location_filter or low_stock %}
+                <a href="/inventory" class="btn btn-secondary">Clear</a>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="form-container">
+            <h3>Add Inventory Item</h3>
+            <form method="POST" action="/inventory/add">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Item Name *</label>
+                        <input type="text" name="name" id="itemName" placeholder="e.g., 5-inch K-style Gutter" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Location *</label>
+                        <select name="location" id="itemLocation" required>
+                            <option value="barn">Barn</option>
+                            <option value="van">Van</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Quantity *</label>
+                        <input type="number" name="quantity" id="itemQuantity" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Unit *</label>
+                        <input type="text" name="unit" id="itemUnit" placeholder="e.g., feet, pieces, boxes" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Unit Cost ($) *</label>
+                        <input type="number" name="unit_cost" id="itemCost" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Low Stock Alert</label>
+                        <input type="number" name="low_stock_alert" step="0.01" value="10">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea name="notes" id="itemNotes" placeholder="Supplier info, specs, etc..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Add Item</button>
+            </form>
+        </div>
+
+        <h3>Inventory Items ({{ inventory|length }})</h3>
+
+        {% if inventory|length == 0 %}
+        <div class="card">
+            <p style="text-align: center; color: #666;">No inventory items found.</p>
+        </div>
+        {% endif %}
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Quantity</th>
+                        <th>Location</th>
+                        <th>Unit Cost</th>
+                        <th>Total Value</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in inventory %}
+                    <tr>
+                        <td>
+                            {{ item.name }}
+                            {% if item.quantity <= item.low_stock_alert %}
+                            <span class="low-stock">⚠️ LOW</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.quantity }} {{ item.unit }}</td>
+                        <td>{{ item.location|title }}</td>
+                        <td>${{ "%.2f"|format(item.unit_cost) }}</td>
+                        <td>${{ "%.2f"|format(item.quantity * item.unit_cost) }}</td>
+                        <td>
+                            <a href="/inventory/edit/{{ item.id }}" class="btn btn-primary btn-small">Edit</a>
+                            <a href="/inventory/delete/{{ item.id }}" 
+                               onclick="return confirm('Delete this item?')" 
+                               class="btn btn-danger btn-small">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let stream = null;
+        let capturedImageData = null;
+
+        function startCamera() {
+            const videoContainer = document.getElementById('videoContainer');
+            const video = document.getElementById('video');
+            
+            navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    facingMode: 'environment',  // Use back camera on mobile
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                } 
+            })
+            .then(function(s) {
+                stream = s;
+                video.srcObject = stream;
+                videoContainer.style.display = 'block';
+            })
+            .catch(function(err) {
+                alert('Camera access denied or not available: ' + err.message);
+            });
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            document.getElementById('videoContainer').style.display = 'none';
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('video');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            capturedImageData = canvas.toDataURL('image/jpeg', 0.8);
+            
+            document.getElementById('preview').src = capturedImageData;
+            document.getElementById('previewContainer').style.display = 'block';
+            
+            stopCamera();
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                capturedImageData = e.target.result;
+                document.getElementById('preview').src = capturedImageData;
+                document.getElementById('previewContainer').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearPreview() {
+            capturedImageData = null;
+            document.getElementById('previewContainer').style.display = 'none';
+            document.getElementById('aiResult').style.display = 'none';
+        }
+
+        function analyzePhoto() {
+            if (!capturedImageData) {
+                alert('Please capture or upload a photo first');
+                return;
+            }
+
+            const aiResult = document.getElementById('aiResult');
+            const aiContent = document.getElementById('aiContent');
+            
+            aiResult.style.display = 'block';
+            aiContent.innerHTML = '<div class="loading">Analyzing image with AI...</div>';
+
+            fetch('/api/ai/scan-inventory', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    photo_data: capturedImageData
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    aiContent.innerHTML = `
+                        <div style="white-space: pre-wrap; line-height: 1.6;">${data.analysis}</div>
+                        <hr style="margin: 15px 0;">
+                        <p><strong>💡 Tip:</strong> Use the form above to add identified items to your inventory.</p>
+                    `;
+                } else {
+                    aiContent.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
+                }
+            })
+            .catch(error => {
+                aiContent.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            });
+        }
+
+        function fillForm(name, quantity, unit, cost) {
+            document.getElementById('itemName').value = name;
+            document.getElementById('itemQuantity').value = quantity;
+            document.getElementById('itemUnit').value = unit;
+            document.getElementById('itemCost').value = cost;
+            
+            // Scroll to form
+            document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+
+    <!-- Floating Help Button -->
+    <a href="/help" class="help-fab" title="Get Help">❓</a>
+</body>
+</html>

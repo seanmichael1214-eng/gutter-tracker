@@ -1,0 +1,18 @@
+HTTP/1.1 302 FOUND
+Server: Werkzeug/3.1.4 Python/3.14.2
+Date: Sat, 27 Dec 2025 10:00:49 GMT
+Content-Type: text/html; charset=utf-8
+Content-Length: 207
+Location: /dashboard
+Vary: Cookie
+Set-Cookie: session=eyJsb2dnZWRfaW4iOnRydWV9.aU-uUQ.aHc_r_J7IwloRFo0DmY4meybG6E; HttpOnly; Path=/
+Connection: close
+
+HTTP/1.1 405 METHOD NOT ALLOWED
+Server: Werkzeug/3.1.4 Python/3.14.2
+Date: Sat, 27 Dec 2025 10:00:49 GMT
+Content-Type: text/html; charset=utf-8
+Allow: HEAD, OPTIONS, GET
+Content-Length: 153
+Connection: close
+

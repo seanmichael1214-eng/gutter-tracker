@@ -8,7 +8,7 @@ load_dotenv()
 
 # Initialize Gemini
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-gemini_model = genai.GenerativeModel("gemini-2.0-flash-exp")  # FREE tier model
+gemini_model = genai.GenerativeModel("gemini-2.0-flash")  # Stable FREE tier model
 
 
 # AI Helper Functions using Gemini

@@ -100,16 +100,22 @@
    - View analytics
    - Check data accuracy
 
+8. **Reports Download**
+   - Go to the Reports page.
+   - Click "Download Today's Report".
+   - Verify a text file is downloaded.
+   - Open the file and check its content.
+
 ### Priority 3: AI Features (Nice to Test)
-8. **AI Quick Estimate**
+9. **AI Quick Estimate**
    - Upload photo
    - Verify estimate generation
    - *Note: Requires GEMINI_API_KEY*
 
-9. **AI Help**
-   - Ask test questions
-   - Verify responses
-   - *Note: Requires GEMINI_API_KEY*
+10. **AI Help**
+    - Ask test questions
+    - Verify responses
+    - *Note: Requires GEMINI_API_KEY*
 
 ---
 

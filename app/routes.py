@@ -7,9 +7,10 @@ from flask import (
     jsonify,
     session,
     current_app,
+    Response,
 )
 from functools import wraps
-from datetime import datetime
+from datetime import datetime, date
 import base64
 
 from .extensions import db
@@ -467,6 +468,43 @@ def reports():
                          total_revenue=total_revenue,
                          customers_count=customers_count,
                          inventory_count=inventory_count)
+
+
+@main.route("/reports/download_today")
+@login_required
+def download_today_report():
+    today = date.today()
+    jobs_today = Job.query.filter(Job.scheduled_date == today).all()
+
+    report_content = f"End of Shift Report - {today.strftime('%Y-%m-%d')}\n"
+    report_content += "=" * 40 + "\n\n"
+
+    if not jobs_today:
+        report_content += "No jobs scheduled for today.\n"
+    else:
+        for job in jobs_today:
+            report_content += f"Job Title: {job.title}\n"
+            if job.customer:
+                report_content += f"Customer: {job.customer.name}\n"
+                report_content += f"Address: {job.customer.address}\n"
+            report_content += f"Status: {job.status}\n"
+            report_content += f"Scheduled Date: {job.scheduled_date.strftime('%Y-%m-%d') if job.scheduled_date else 'N/A'}\n"
+            report_content += f"Total Cost: ${job.total_cost:.2f}\n"
+            report_content += f"Description: {job.description or 'N/A'}\n"
+            report_content += f"Notes: {job.notes or 'N/A'}\n"
+            
+            if job.materials_used:
+                report_content += "Materials Used:\n"
+                for item in job.materials_used:
+                    report_content += f"- {item.name}: {item.quantity} units @ ${item.unit_cost:.2f} each\n"
+            
+            report_content += "-" * 40 + "\n\n"
+
+    return Response(
+        report_content,
+        mimetype="text/plain",
+        headers={"Content-disposition": f"attachment; filename=daily_report_{today.strftime('%Y-%m-%d')}.txt"}
+    )
 
 
 # Calendar

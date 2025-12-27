@@ -5,7 +5,7 @@ import os
 
 load_dotenv()
 
-def create_app():
+def create_app(config_overrides=None):
     app = Flask(__name__)
 
     # Logging - use StreamHandler for serverless environments
@@ -19,6 +19,10 @@ def create_app():
 
     # Load configuration
     app.config.from_object('app.config.Config')
+    
+    if config_overrides:
+        app.config.update(config_overrides)
+
     app.logger.info("Configuration loaded.")
 
     # Warn if APP_PASSWORD is using a weak/default value

@@ -207,13 +207,16 @@ except Exception as e:
 ## Testing Guidelines
 
 - **Test file naming:** `test_*.py` in `tests/` directory
-- **Use pytest fixtures** for app and database setup
-- **Test all API endpoints** with valid and invalid inputs
-- **Mock external APIs** (Gemini) to avoid rate limits
-- Keep tests **fast and isolated** (use SQLite in-memory for tests)
+- **Fixtures:** Core fixtures (`app`, `client`) are defined in `tests/conftest.py`. The test app uses an in-memory SQLite database.
+- **Configuration:** `pytest.ini` is configured to correctly set the Python path.
+- **Use pytest fixtures** for app and database setup.
+- **Test all API endpoints** with valid and invalid inputs.
+- **Mock external APIs** (Gemini) to avoid rate limits.
+- Keep tests **fast and isolated**.
 - Example:
 ```python
 def test_add_inventory(client):
+    # The 'client' fixture is automatically provided by conftest.py
     response = client.post('/inventory/add', data={
         'name': 'Test Item',
         'quantity': 10,
@@ -411,14 +414,16 @@ flyctl logs --app gutter-tracker-app --no-tail | tail -20
 - `/help` - AI chatbot support
 
 ### Recent Fixes (Dec 27, 2025)
-1. ✅ Fixed chatbot context - Gemini now understands Gutter Tracker app features
-2. ✅ Fixed photo upload - Mobile users can choose camera OR gallery (3 templates)
-3. ✅ Cleaned up duplicate files - removed .ai-team-master directory (17 files)
-4. ✅ Fixed login freeze - added missing `/quick-estimate` and `/help` routes
-5. ✅ Fixed serverless deployment - switched to StreamHandler
-6. ✅ Fixed OOM crashes - increased memory to 512MB, reduced to 1 worker
-7. ✅ Fixed tab navigation - added missing `/materials` and `/reports` routes
-8. ✅ Added calendar feature - monthly view of scheduled jobs
+1. ✅ **New Feature:** Added "End of Shift" daily report download from the Reports page.
+2. ✅ **Testing:** Overhauled pytest setup with `conftest.py` and `pytest.ini` to fix test discovery and execution errors.
+3. ✅ Fixed chatbot context - Gemini now understands Gutter Tracker app features
+4. ✅ Fixed photo upload - Mobile users can choose camera OR gallery (3 templates)
+5. ✅ Cleaned up duplicate files - removed .ai-team-master directory (17 files)
+6. ✅ Fixed login freeze - added missing `/quick-estimate` and `/help` routes
+7. ✅ Fixed serverless deployment - switched to StreamHandler
+8. ✅ Fixed OOM crashes - increased memory to 512MB, reduced to 1 worker
+9. ✅ Fixed tab navigation - added missing `/materials` and `/reports` routes
+10. ✅ Added calendar feature - monthly view of scheduled jobs
 
 ---
 

@@ -7,6 +7,7 @@ This is a Flask-based web application for gutter installation businesses, superc
 - **AI-Powered Estimates**: Generate cost estimates from job descriptions.
 - **AI Photo Analysis**: Analyze photos of gutters for damage assessment.
 - **AI Smart Scheduling**: Get suggestions for optimal job scheduling.
+- **Downloadable Daily Work Reports**: Generate and download a text file summary of the day's jobs.
 - **Mobile-Friendly**: Responsive design for phones, tablets, and desktops.
 - **Database-Backed**: Uses PostgreSQL for production and SQLite for local development.
 
@@ -76,27 +77,30 @@ This project uses a `Makefile` for common commands.
   make help
   ```
 
-## 🚀 Deployment
+## 🚀 Deployment (Fly.io)
 
-This application is configured for deployment on [Vercel](https://vercel.com).
+This application is configured for deployment on [Fly.io](https://fly.io) using Docker.
 
-**Note for PostgreSQL deployments:** If you are using a PostgreSQL database for your deployment, you will need to add `psycopg2-binary` to your `requirements.txt` file.
+1.  **Install flyctl:**
+    Follow the instructions at [https://fly.io/docs/hands-on/install-flyctl/](https://fly.io/docs/hands-on/install-flyctl/)
 
-1.  **Login to Vercel:**
+2.  **Login to Fly.io:**
     ```bash
-    vercel login
+    flyctl auth login
     ```
 
-2.  **Deploy:**
+3.  **Deploy:**
     ```bash
-    vercel --prod
+    flyctl deploy --app gutter-tracker-app
     ```
 
-3.  **Set environment variables** in the Vercel dashboard for your project:
-    - `GEMINI_API_KEY`
-    - `DATABASE_URL`
-    - `SECRET_KEY`
-    - `APP_PASSWORD`
+4.  **Set environment variables** as secrets on Fly.io:
+    ```bash
+    flyctl secrets set GEMINI_API_KEY="your-key" --app gutter-tracker-app
+    flyctl secrets set DATABASE_URL="your-postgres-url" --app gutter-tracker-app
+    flyctl secrets set SECRET_KEY="your-secret" --app gutter-tracker-app
+    flyctl secrets set APP_PASSWORD="your-password" --app gutter-tracker-app
+    ```
 
 ## 🔒 Security
 

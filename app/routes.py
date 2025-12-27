@@ -61,7 +61,6 @@ def logout():
 def home():
     customers = Customer.query.all()
     current_id = request.args.get("customer_id", type=int)
-    # Persist current owner for per-user isolation
     if current_id:
         session["current_owner_id"] = current_id
     inventories = InventoryItem.query.filter_by(owner_id=current_id).all() if current_id else []
@@ -136,15 +135,26 @@ def delete_customer(customer_id):
     db.session.commit()
     return redirect(url_for("main.customers"))
 
-# Jobs (minimal)
+# Jobs (expanded date filtering)
 @main.route("/jobs")
 @login_required
 def jobs():
     status_filter = request.args.get("status", "")
+    date_str = request.args.get("date", "")
+    date_filter = None
+    if date_str:
+        try:
+            date_filter = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except Exception:
+            date_filter = None
+
+    query = Job.query
     if status_filter:
-        jobs = Job.query.filter_by(status=status_filter).order_by(Job.scheduled_date.desc()).all()
-    else:
-        jobs = Job.query.order_by(Job.scheduled_date.desc()).all()
+        query = query.filter_by(status=status_filter)
+    if date_filter:
+        query = query.filter_by(scheduled_date=date_filter)
+
+    jobs = query.order_by(Job.scheduled_date.desc()).all()
     customers = Customer.query.all()
     return render_template("jobs.html", jobs=jobs, customers=customers, status_filter=status_filter)
 
@@ -170,8 +180,9 @@ def add_job():
 @login_required
 def view_job(job_id):
     job = Job.query.get_or_404(job_id)
+    customer = job.customer
     materials = Material.query.all()
-    return render_template("view_job.html", job=job, materials=materials)
+    return render_template("view_job.html", job=job, customer=customer, materials=materials)
 
 @main.route("/jobs/<int:job_id>/status", methods=["POST"])
 @login_required
@@ -199,7 +210,6 @@ def add_photo_to_job(job_id):
 @login_required
 def inventory():
     location_filter = request.args.get("location", "")
-    # Per-user isolation: only show items for the currently selected owner
     owner_id = session.get("current_owner_id")
     if owner_id is None:
         inventory_items = []
@@ -263,7 +273,6 @@ def api_chat():
     message = data.get("message", "").strip()
     if not message:
         return jsonify({"response": "Please send a message."})
-    # Simple inventory commands
     def parse_kv(text):
         d = {}
         for part in text.split(','):
@@ -330,7 +339,6 @@ def api_chat():
         return jsonify({"response": f"Created scanned inventory item {item.name} (id {item.id})"})
     if lm.startswith("/") or lm.startswith("!"):
         return jsonify({"response": "Unknown command. Try inventory- commands or /help"})
-    # Fallback to Gemini with app context
     if hasattr(gemini_model, 'generate_content'):
         try:
             system_prompt = """You are a knowledgeable assistant for Gutter Tracker, a business management application for gutter installation and cleaning companies.
@@ -340,8 +348,8 @@ ABOUT GUTTER TRACKER:
 - Customer Management: Store and manage customer information including names, addresses, phone numbers, emails, and notes
 - Inventory Management: Track materials and supplies used in jobs, with support for multiple owners/team members
 - Estimates & Pricing: Generate AI-powered cost estimates for jobs based on job descriptions and customer addresses
-- Photo Analysis: Analyze job site photos to identify gutter conditions, damage types, and recommend repairs
-- Scheduling: Suggest optimal scheduling dates for jobs
+- Photo Analysis: Analyze job site photos to identify gutter conditions, damage types, and indicate repairs
+- Scheduling: Suggest scheduling dates for jobs
 - Materials Database: Manage available materials for gutter work
 - Reports & Analytics: View job statistics, revenue, completion rates, and customer counts
 - Quick Estimates: Generate estimates from photos
@@ -352,20 +360,7 @@ APP FEATURES:
 - Inventory items have: name, quantity, unit, unit_cost, location, low_stock_alert, notes, and owner
 - Jobs can be filtered by status: scheduled, in progress, completed
 - Users can view monthly calendar of scheduled jobs
-
-YOUR ROLE:
-- Answer questions about using Gutter Tracker features
-- Provide guidance on best practices for gutter business operations
-- Help troubleshoot app features
-- Answer general gutter industry questions (repair types, materials, techniques)
-- Guide users on inventory management and job scheduling
-
-When answering:
-1. Be helpful and professional
-2. Reference specific app features when relevant
-3. Provide step-by-step guidance for app tasks
-4. If user asks about inventory commands, remind them of the correct syntax
-5. For gutter-related technical questions, provide expert advice"""
+"""
 
             full_prompt = f"{system_prompt}\n\nUser Question: {message}"
             resp = gemini_model.generate_content(full_prompt)
@@ -474,57 +469,41 @@ def reports():
                          inventory_count=inventory_count)
 
 
-
 # Calendar
 @main.route("/calendar")
 @login_required
 def calendar():
-    from datetime import datetime, timedelta
     import calendar as cal
-    
-    # Get current month or requested month
     year = request.args.get('year', datetime.now().year, type=int)
     month = request.args.get('month', datetime.now().month, type=int)
-    
-    # Get all jobs for the month
     start_date = datetime(year, month, 1).date()
     if month == 12:
         end_date = datetime(year + 1, 1, 1).date()
     else:
         end_date = datetime(year, month + 1, 1).date()
-    
     jobs = Job.query.filter(
         Job.scheduled_date >= start_date,
         Job.scheduled_date < end_date
     ).all()
-    
-    # Group jobs by date
     jobs_by_date = {}
     for job in jobs:
         if job.scheduled_date:
             date_key = job.scheduled_date.strftime('%Y-%m-%d')
-            if date_key not in jobs_by_date:
-                jobs_by_date[date_key] = []
-            jobs_by_date[date_key].append(job)
-    
-    # Generate calendar data
+            jobs_by_date.setdefault(date_key, []).append(job)
     cal_obj = cal.monthcalendar(year, month)
     month_name = cal.month_name[month]
-    
-    # Calculate previous and next month
     prev_month = month - 1 if month > 1 else 12
     prev_year = year if month > 1 else year - 1
     next_month = month + 1 if month < 12 else 1
     next_year = year if month < 12 else year + 1
-    
     return render_template("calendar.html",
-                         calendar=cal_obj,
-                         year=year,
-                         month=month,
-                         month_name=month_name,
-                         jobs_by_date=jobs_by_date,
-                         prev_month=prev_month,
-                         prev_year=prev_year,
-                         next_month=next_month,
-                         next_year=next_year,
-                         today=datetime.now().date())
+                           calendar=cal_obj,
+                           year=year,
+                           month=month,
+                           month_name=month_name,
+                           jobs_by_date=jobs_by_date,
+                           prev_month=prev_month,
+                           prev_year=prev_year,
+                           next_month=next_month,
+                           next_year=next_year,
+                           today=datetime.now().date())

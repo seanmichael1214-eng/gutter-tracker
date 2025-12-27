@@ -87,7 +87,7 @@
             <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap;">
                 <div>
                     <h3>{{ job.title }}</h3>
-                    <p><strong>Customer:</strong> {{ job.customer_name }}</p>
+                    <p><strong>Customer:</strong> {{ job.customer.name }}</p>
                 </div>
                 <span class="status-badge status-{{ job.status }}">{{ job.status|replace('_', ' ')|title }}</span>
             </div>

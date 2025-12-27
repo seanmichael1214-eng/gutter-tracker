@@ -231,16 +231,16 @@
                             {% if day != 0 %}
                                 {% set date_key = '%04d-%02d-%02d'|format(year, month, day) %}
                                 {% set is_today = (year == today.year and month == today.month and day == today.day) %}
-                                <div class="calendar-day {% if is_today %}today{% endif %}" onclick="window.location.href='/jobs?date={{ date_key }}'">
+                                 <a href="/jobs?date={{ date_key }}" class="calendar-day {% if is_today %}today{% endif %}">
                                     <div class="day-number">{{ day }}</div>
                                     {% if date_key in jobs_by_date %}
                                         {% for job in jobs_by_date[date_key] %}
-                                        <div class="job-item {{ job.status|replace('_', '-') }}" title="{{ job.title }} - {{ job.customer.name }}">
+                                        <a href="/jobs/{{ job.id }}" class="job-item {{ job.status|replace('_', '-') }}" title="{{ job.title }} - {{ job.customer.name }}">
                                             {{ job.customer.name[:15] }}{% if job.customer.name|length > 15 %}...{% endif %}
-                                        </div>
+                                        </a>
                                         {% endfor %}
                                     {% endif %}
-                                </div>
+
                             {% else %}
                                 <div class="calendar-day empty"></div>
                             {% endif %}

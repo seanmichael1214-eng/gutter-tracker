@@ -48,7 +48,7 @@
 
         <div class="card">
             <h3>Update Job Status</h3>
-            <form method="POST" action="/jobs/{{ job_id }}/status" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <form method="POST" action="/jobs/{{ job.id }}/status" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                 <select name="status" style="padding: 0.75rem; flex: 1; min-width: 200px;">
                     <option value="scheduled" {% if job.status == 'scheduled' %}selected{% endif %}>Scheduled</option>
                     <option value="in_progress" {% if job.status == 'in_progress' %}selected{% endif %}>In Progress</option>
@@ -93,7 +93,7 @@
             {% endif %}
             
             <h4 style="margin-top: 2rem;">Add Material</h4>
-            <form method="POST" action="/jobs/{{ job_id }}/add_material">
+            <form method="POST" action="/jobs/{{ job.id }}/add_material">
                 <div class="form-row">
                     <div class="form-group">
                         <label>Material</label>
@@ -135,7 +135,7 @@
             <div class="camera-container">
                 <input type="file" id="photo-input" accept="image/*" style="margin-bottom: 1rem;">
                 <img id="photo-preview" style="max-width: 100%; margin-bottom: 1rem; display: none; border-radius: 8px;">
-                <form method="POST" action="/jobs/{{ job_id }}/add_photo" id="photo-form">
+                <form method="POST" action="/jobs/{{ job.id }}/add_photo" id="photo-form">
                     <input type="hidden" name="photo_data" id="photo-data">
                     <div class="form-group">
                         <label>Caption</label>
@@ -148,7 +148,7 @@
 
         <div class="card">
             <h3>Job Notes</h3>
-            <form method="POST" action="/jobs/{{ job_id }}/notes">
+            <form method="POST" action="/jobs/{{ job.id }}/notes">
                 <div class="form-group">
                     <textarea name="notes" rows="5" placeholder="Add notes about the job...">{{ job.notes }}</textarea>
                 </div>

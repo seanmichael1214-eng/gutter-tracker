@@ -19,4 +19,4 @@ with app.app_context():
 PYTHON
 
 echo "🌐 Starting web server on port ${PORT:-8080}..."
-exec gunicorn run:app --bind 0.0.0.0:${PORT:-8080} --workers 2 --threads 2 --timeout 120
+exec gunicorn run:app --bind 0.0.0.0:${PORT:-8080} --workers 1 --threads 2 --timeout 120 --max-requests 1000 --max-requests-jitter 50
